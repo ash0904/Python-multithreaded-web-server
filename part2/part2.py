@@ -1,7 +1,7 @@
 import socket
 import os,time
 from threading import Thread
-# import difflib
+
 class RequestThread(Thread):
 
     def __init__(self, threadNo, thread_connection):
@@ -10,45 +10,17 @@ class RequestThread(Thread):
         self.connection = thread_connection
 
     def run(self):
-        request = self.connection.recv(1024)
-        print request
+        intialRequest = self.connection.recv(1024)
+        print intialRequest
 
-        request,method = GetRequestDict(request)
+        request,method = GetRequestDict(intialRequest)
         if method == "POST":
-            http_response = """\
-HTTP/1.1 200 OK
-
-"""
-            wflag = 1
-            while wflag:
-                request = self.connection.recv(1024)
-                requestlist = request.split('\n')
-                for requestelement in requestlist:
-                    Headers = requestelement.split(' ')
-                    print requestelement
-                    if Headers[0] == "Content-Disposition:":
-                        print "breaking"
-                        wflag = 0
-                        break
-            a = self.connection.recv(1024)
-            print "Printing a :", a
-            http_response = """\
-HTTP/1.1 200 OK
-
-<html>
-<body>
-Uploaded cheers!
-<br>
-<a href= "http://10.1.37.98:9991/upload.html"> Upload Again </a>
-</body>
-</html>
-"""
-            self.connection.sendall(http_response)
+            http_response = handlePostRequest(request,intialRequest,self.connection)
         else:
             http_response = handleRequest(request)
-            self.connection.sendall(http_response)
 
         #print http_response
+        self.connection.sendall(http_response)
         self.connection.close()
         time.sleep(60)
         print "Thread is closing", self.threadNo
@@ -58,24 +30,31 @@ def GetRequestDict(request):
     requestlist = request.split('\n')
     for requestelement in requestlist:
         Headers = requestelement.split(' ')
+        if Headers[0] == "Content-Type:":
+            ret["boundary"] = Headers[2][10:len(Headers[2])]
+            ret["boundary"] = "---" + ret["boundary"]
         if Headers[0] == "Content-Disposition:":
             ret["filename"] = Headers[3][10:len(Headers[3])-2]
             method = "POST"
+            flag = 1
+            return ret,method
         elif len(Headers) >= 2:
             ret[Headers[0]] = Headers[1]
             if Headers[0]=="GET":
                 method = "GET"
                 ret["Version"] = Headers[2]
                 ret["GET"] = ret["GET"][1:]
+                return ret,method
 
-    return ret,method
 
 def handleRequest(request):
     if request["GET"] not in os.listdir("./"):
         http_response = """\
 HTTP/1.1 200 OK
 
-404 Not Found!
+<html>
+<h1>404 Not Found!</h1>
+</html>
 """
     else:
         with open(request["GET"]) as f:
@@ -87,6 +66,72 @@ HTTP/1.1 200 OK
                 http_response += line
 
     return http_response
+
+def handlePostRequest(request,intialRequest,connection):
+    fname = "uploads/"+request["filename"]
+    fobj = open(fname,"w+")
+    lines = intialRequest.split('\n')
+    fbeg = 0
+    it = 0
+    for line in lines:
+        it += 1
+        if line == request["boundary"]:
+            fbeg = 1
+        if fbeg and fbeg <6:
+            fbeg +=1
+        if fbeg > 5 and it != len(lines):
+            fobj.write(line+"\n")
+        elif it == len(lines):
+            fobj.write(line)
+
+    wflag = 1
+    while wflag:
+        newRequest = connection.recv(1024)
+        requestlist = newRequest.split('\n')
+        ite = 0
+        for requestelement in requestlist:
+            ite += 1
+            if requestelement == request["boundary"] :
+                wflag = 0
+                break
+            else:
+                if ite != len(requestlist):
+                    fobj.write(requestelement+"\n")
+                else:
+                    fobj.write(requestelement)
+        # for ite in range(len(requestlist)):
+        #     if requestlist[ite] == request["boundary"] :
+        #         wflag = 0
+        #         break
+        #     else:
+        #         if ite < len(requestlist)-1  and requestlist[ite+1] != request["boundary"] :
+        #             fobj.write(requestlist[ite]+"\n")
+        #         else:
+        #             if ite < len(requestlist)-1 and requestlist[ite+1] != request["boundary"]:
+        #                 fobj.write(requestlist[ite])
+
+    fobj.close()
+    connection.settimeout(2)
+
+    try:
+        a = connection.recv(1024)
+    except:
+        a = "timeout"
+    # print "Printing a :", a
+    http_response = """\
+HTTP/1.1 200 OK
+
+<html>
+<body>
+Uploaded cheers!
+<br>
+<a href= "http://10.1.37.98:9991/upload.html"> Upload Again </a>
+</body>
+</html>
+"""
+    return http_response
+
+
 
 def handleUpload(request):
 
