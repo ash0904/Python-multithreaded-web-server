@@ -1,34 +1,36 @@
 from socket import *
 import sys
+
 if (len(sys.argv)!=4):
 	print "give host, port, and filename as command line argument"
 	exit()
-server_host = sys.argv[1]
-server_port = sys.argv[2]
-filename = sys.argv[3]
 
-host_port = "%s:%s" %(server_host, server_port)
+host = sys.argv[1]
+port = int(sys.argv[2])
+filename = sys.argv[3]
+hostPort = "%s:%s" %(host, port)
+
 try:
-	client_socket = socket(AF_INET,SOCK_STREAM)
-	client_socket.connect((server_host,int(server_port)))
-	header = {
+	clientConn = socket(AF_INET,SOCK_STREAM)
+	clientConn.connect((host,port))
+	Headers = {
 	"GET" : " /%s HTTP/1.1" %(filename),
 	"Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 	"Accept-Language": "en-us",
-	"Host": host_port,
+	"Host": hostPort,
 	}
-	http_header = "\r\n".join("%s%s" %(item,header[item]) for item in header)
-	print http_header
-	client_socket.send("%s\r\n\r\n" %(http_header))
-
+	request = "\r\n".join("%s%s" %(item,Headers[item]) for item in Headers)
+	clientConn.send("%s\r\n\r\n" %(request))
+	print request
 except IOError:
-
+	print "There is some error connecting to server"
 	sys.exit(1)
-final=""
-response_message=client_socket.recv(1024)
-while response_message:
-	final += response_message
-	response_message = client_socket.recv(1024)
 
-client_socket.close()
+final=""
+responseMessage=clientConn.recv(1024)
+while responseMessage:
+	final += responseMessage
+	responseMessage = clientConn.recv(1024)
+
+clientConn.close()
 print "final:",final
