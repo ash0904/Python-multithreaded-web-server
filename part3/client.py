@@ -14,12 +14,12 @@ try:
 	clientConn = socket(AF_INET,SOCK_STREAM)
 	clientConn.connect((host,port))
 	Headers = {
-	"GET" : " /%s HTTP/1.1" %(filename),
+	"GET" : "/%s HTTP/1.1" %(filename),
 	"Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 	"Accept-Language": "en-us",
 	"Host": hostPort,
 	}
-	request = "\r\n".join("%s%s" %(item,Headers[item]) for item in Headers)
+	request = "\r\n".join("%s %s" %(item,Headers[item]) for item in Headers)
 	clientConn.send("%s\r\n\r\n" %(request))
 	print request
 except IOError:
