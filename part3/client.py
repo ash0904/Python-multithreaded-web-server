@@ -1,9 +1,8 @@
 from socket import *
 import sys
-"""
-Command line argument: import sys sys.argv
-sys.argv is a list,no need for split
-"""
+if (len(sys.argv)!=4):
+	print "give host, port, and filename as command line argument"
+	exit()
 server_host = sys.argv[1]
 server_port = sys.argv[2]
 filename = sys.argv[3]
@@ -17,7 +16,7 @@ try:
 	"Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 	"Accept-Language": "en-us",
 	"Host": host_port,
-	}	
+	}
 	http_header = "\r\n".join("%s%s" %(item,header[item]) for item in header)
 	print http_header
 	client_socket.send("%s\r\n\r\n" %(http_header))
