@@ -4,14 +4,18 @@ from threading import Thread
 
 class RequestThread(Thread):
 
-    def __init__(self, threadNo, thread_connection):
+    def __init__(self, threadNo, thread_connection,dos):
         Thread.__init__(self)
         self.threadNo = threadNo
         self.connection = thread_connection
+        self.dos = dos
 
     def run(self):
         intialRequest = self.connection.recv(1024)
         print intialRequest
+        if self.dos == True:
+            time.sleep(10)
+            # print "done1"
 
         request,method = GetRequestDict(intialRequest)
         if method == "POST":
@@ -22,8 +26,8 @@ class RequestThread(Thread):
         #print http_response
         self.connection.sendall(http_response)
         self.connection.close()
-        time.sleep(60)
-        print "Thread is closing", self.threadNo
+        time.sleep(6)
+        # print "Thread is closing", self.threadNo
 
 def GetRequestDict(request):
     ret = dict()
@@ -68,6 +72,22 @@ HTTP/1.1 200 OK
     return http_response
 
 def handlePostRequest(request,intialRequest,connection):
+    if not request["filename"]:
+        http_response = """\
+HTTP/1.1 200 OK
+
+<html>
+<body>
+<h1>
+ Hey! Select the file
+<br>
+<a href= "http://10.1.37.98:9991/upload.html"> Upload Again </a>
+</h1>
+</body>
+</html>
+"""
+        return http_response
+
     fname = "uploads/"+request["filename"]
     fobj = open(fname,"w+")
     lines = intialRequest.split('\n')
@@ -123,25 +143,39 @@ HTTP/1.1 200 OK
 
 <html>
 <body>
-Uploaded cheers!
+<h1>
+ File (%s) has been Uploaded cheers!
 <br>
 <a href= "http://10.1.37.98:9991/upload.html"> Upload Again </a>
+</h1>
 </body>
 </html>
-"""
+""" %request["filename"]
     return http_response
 
-
-
-def handleUpload(request):
-
-    if "filename" in request:
-
-        data = self.rfile.read(content_length)
-        with open(request["filename"], 'wb') as fw:
-            f.write(data)
-
-
+def checkForDos(current_client):
+    # if noOfRequest received from a particular client in timeInterval then block it for 10 seconds
+    noOfRequest = 10
+    timeInterval = 4
+    count = 0
+    log = open("logs.txt","a+")
+    lines = log.readlines()
+    log.close()
+    log = open("logs.txt","w+")
+    for line in lines:
+        element = line.split(' ')
+        if time.time() - float(element[1][:len(element[1])-1]) < timeInterval:
+            log.write(line)
+        else:
+            continue
+        # print element[0],client_address,element[0] == client_address
+        if element[0] == current_client:
+            count += 1
+    log.close()
+    if count > noOfRequest:
+        return True
+    else:
+        return False
 
 HOST, PORT = '10.1.37.98', 9991
 
@@ -152,11 +186,15 @@ socket_listen.listen(1)
 print 'Serving HTTP on port %s ...' % PORT
 
 requestList = list()
-
+os.remove("logs.txt")
 while True:
+    log = open("logs.txt","a+")
     client_connection, client_address = socket_listen.accept()
-
-    newRequest = RequestThread(len(requestList), client_connection)
+    log.write(client_address[0]+" "+str(time.time())+"\n")
+    log.close()
+    dos = checkForDos(client_address[0])
+    newRequest = RequestThread(len(requestList), client_connection,dos)
+    dos = False
     newRequest.start()
     requestList.append(newRequest)
 

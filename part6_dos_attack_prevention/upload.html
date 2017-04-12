@@ -1,10 +1,13 @@
-<html>
-  <body>
 
-    <form action="http://localhost:8888/uploadit" method="POST">
-      <input type="hidden" name="MAX_FILE_SIZE" value="100000" />
-      Choose a file to upload: <input name="uploadedfile" type="file" /><br />
-      <input type="submit" value="Upload File" />
-    </form>
-  </body>
+<!DOCTYPE html>
+<html>
+<body>
+
+<form action="http://10.1.37.98:9991/submit.html" method="post" enctype="multipart/form-data">
+    Select file to upload:
+    <input type="file" name="fileToUpload" id="fileToUpload">
+    <input type="submit" value="Upload" name="submit"  >
+</form>
+
+</body>
 </html>

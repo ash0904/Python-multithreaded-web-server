@@ -123,25 +123,15 @@ HTTP/1.1 200 OK
 
 <html>
 <body>
-Uploaded cheers!
+<h1>
+ File (%s) has been Uploaded cheers!
 <br>
 <a href= "http://10.1.37.98:9991/upload.html"> Upload Again </a>
+</h1>
 </body>
 </html>
-"""
+""" %request["filename"]
     return http_response
-
-
-
-def handleUpload(request):
-
-    if "filename" in request:
-
-        data = self.rfile.read(content_length)
-        with open(request["filename"], 'wb') as fw:
-            f.write(data)
-
-
 
 HOST, PORT = '10.1.37.98', 9991
 
