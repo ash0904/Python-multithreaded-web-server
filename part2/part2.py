@@ -22,7 +22,7 @@ class RequestThread(Thread):
         #print http_response
         self.connection.sendall(http_response)
         self.connection.close()
-        time.sleep(60)
+        time.sleep(20)
         print "Thread is closing", self.threadNo
 
 def GetRequestDict(request):
@@ -68,6 +68,22 @@ HTTP/1.1 200 OK
     return http_response
 
 def handlePostRequest(request,intialRequest,connection):
+    if not request["filename"]:
+        http_response = """\
+HTTP/1.1 200 OK
+
+<html>
+<body>
+<h1>
+ Hey! Select the file
+<br>
+<a href= "http://10.1.37.98:9991/upload.html"> Upload Again </a>
+</h1>
+</body>
+</html>
+"""
+        return http_response
+
     fname = "uploads/"+request["filename"]
     fobj = open(fname,"w+")
     lines = intialRequest.split('\n')
