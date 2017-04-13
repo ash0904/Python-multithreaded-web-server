@@ -124,12 +124,12 @@ def handleRequest(request, head):
     return http_response
 
 
-HOST, PORT = '', 9991
+HOST, PORT = '127.0.0.1', 9991
 
 socket_listen = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 socket_listen.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 socket_listen.bind((HOST, PORT))
-socket_listen.listen(1)
+socket_listen.listen(5)
 print 'Serving HTTP on port %s ...' % PORT
 
 requestList = list()

@@ -77,7 +77,7 @@ HTTP/1.1 200 OK
 <h1>
  Hey! Select the file
 <br>
-<a href= "http://10.1.37.98:9991/upload.html"> Upload Again </a>
+<a href= "http://127.0.0.1:9991/upload.html"> Upload Again </a>
 </h1>
 </body>
 </html>
@@ -94,7 +94,7 @@ HTTP/1.1 200 OK
         if line == request["boundary"]:
             fbeg = 1
         if fbeg and fbeg <6:
-            fbeg +=1
+            fbeg += 1
         if fbeg > 5 and it != len(lines):
             fobj.write(line+"\n")
         elif it == len(lines):
@@ -108,6 +108,7 @@ HTTP/1.1 200 OK
         for requestelement in requestlist:
             ite += 1
             if requestelement == request["boundary"] :
+                print "\n\n\nO hello\n\n\n"
                 wflag = 0
                 break
             else:
@@ -129,6 +130,7 @@ HTTP/1.1 200 OK
     fobj.close()
     connection.settimeout(2)
 
+    print "\n\n\nO hello\n\n\n"
     try:
         a = connection.recv(1024)
     except:
@@ -142,19 +144,19 @@ HTTP/1.1 200 OK
 <h1>
  File (%s) has been Uploaded cheers!
 <br>
-<a href= "http://10.1.37.98:9991/upload.html"> Upload Again </a>
+<a href= "http://127.0.0.1:9991/upload.html"> Upload Again </a>
 </h1>
 </body>
 </html>
 """ %request["filename"]
     return http_response
 
-HOST, PORT = '10.1.37.98', 9991
+HOST, PORT = '127.0.0.1', 9991
 
 socket_listen = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 socket_listen.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 socket_listen.bind((HOST, PORT))
-socket_listen.listen(1)
+socket_listen.listen(5)
 print 'Serving HTTP on port %s ...' % PORT
 
 requestList = list()

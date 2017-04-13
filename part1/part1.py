@@ -34,12 +34,12 @@ HTTP/1.1 200 OK
 
 
 
-HOST, PORT = '10.1.37.98', 8888
+HOST, PORT = '127.0.0.1', 9991
 
 listen_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 listen_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 listen_socket.bind((HOST, PORT))
-listen_socket.listen(1)
+listen_socket.listen(5)
 print 'Serving HTTP on port %s ...' % PORT
 while True:
     client_connection, client_address = listen_socket.accept()
